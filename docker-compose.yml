@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: inavae-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: inavae
+      POSTGRES_USER: inavae
+      POSTGRES_PASSWORD: inavae_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - inavae-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U inavae -d inavae"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  inavae-postgres-data:

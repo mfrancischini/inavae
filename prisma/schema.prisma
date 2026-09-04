@@ -1,0 +1,189 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum VisitedPersonStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ActivityStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+model Church {
+  id            String          @id @default(cuid())
+  name          String
+  slug          String          @unique
+  timezone      String          @default("America/Argentina/Buenos_Aires")
+  isActive      Boolean         @default(true)
+  users         User[]
+  activityTypes ActivityType[]
+  activities    Activity[]
+  visitedPeople VisitedPerson[]
+  auditLogs     AuditLog[]
+  createdAt     DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime        @updatedAt @db.Timestamptz(3)
+}
+
+model Role {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  description String?
+  users       UserRole[]
+  createdAt   DateTime   @default(now()) @db.Timestamptz(3)
+}
+
+model User {
+  id                   String               @id @default(cuid())
+  churchId             String
+  church               Church               @relation(fields: [churchId], references: [id], onDelete: Restrict)
+  firstName            String
+  lastName             String
+  email                String               @unique
+  passwordHash         String
+  status               UserStatus           @default(ACTIVE)
+  lastLoginAt          DateTime?            @db.Timestamptz(3)
+  roles                UserRole[]
+  createdActivities    Activity[]           @relation("ActivityCreator")
+  activityParticipates ActivityUser[]
+  auditLogs            AuditLog[]
+  resetTokens          PasswordResetToken[]
+  createdAt            DateTime             @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime             @updatedAt @db.Timestamptz(3)
+
+  @@index([churchId, status])
+}
+
+model UserRole {
+  id        String   @id @default(cuid())
+  userId    String
+  roleId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([userId, roleId])
+  @@index([roleId])
+}
+
+model ActivityType {
+  id                    String     @id @default(cuid())
+  churchId              String
+  church                Church     @relation(fields: [churchId], references: [id], onDelete: Restrict)
+  code                  String
+  name                  String
+  description           String?
+  requiresVisitedPerson Boolean    @default(false)
+  isActive              Boolean    @default(true)
+  activities            Activity[]
+  createdAt             DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt             DateTime   @updatedAt @db.Timestamptz(3)
+
+  @@unique([churchId, code])
+  @@index([churchId, isActive])
+}
+
+model VisitedPerson {
+  id         String              @id @default(cuid())
+  churchId   String
+  church     Church              @relation(fields: [churchId], references: [id], onDelete: Restrict)
+  firstName  String
+  lastName   String
+  phone      String?
+  address    String?
+  notes      String?
+  status     VisitedPersonStatus @default(ACTIVE)
+  activities Activity[]
+  createdAt  DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime            @updatedAt @db.Timestamptz(3)
+
+  @@index([churchId, status])
+  @@index([churchId, lastName, firstName])
+}
+
+model Activity {
+  id              String         @id @default(cuid())
+  churchId        String
+  church          Church         @relation(fields: [churchId], references: [id], onDelete: Restrict)
+  activityTypeId  String
+  activityType    ActivityType   @relation(fields: [activityTypeId], references: [id], onDelete: Restrict)
+  scheduledAt     DateTime       @db.Timestamptz(3)
+  place           String?
+  visitedPersonId String?
+  visitedPerson   VisitedPerson? @relation(fields: [visitedPersonId], references: [id], onDelete: Restrict)
+  notes           String?
+  status          ActivityStatus @default(SCHEDULED)
+  createdById     String
+  createdBy       User           @relation("ActivityCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  participants    ActivityUser[]
+  createdAt       DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime       @updatedAt @db.Timestamptz(3)
+
+  @@index([churchId, scheduledAt])
+  @@index([churchId, status])
+  @@index([visitedPersonId])
+  @@index([createdById])
+}
+
+model ActivityUser {
+  id         String   @id @default(cuid())
+  activityId String
+  userId     String
+  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([activityId, userId])
+  @@index([userId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  churchId  String
+  church    Church   @relation(fields: [churchId], references: [id], onDelete: Restrict)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([churchId, createdAt])
+  @@index([entity, entityId])
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime  @db.Timestamptz(3)
+  usedAt    DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+
+  @@index([userId, expiresAt])
+}

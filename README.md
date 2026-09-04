@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# INAVAE
 
-## Getting Started
+Aplicacion web responsive para gestionar actividades de la iglesia de Carapachay.
 
-First, run the development server:
+## Stack
+
+- Next.js 16 con App Router
+- React y TypeScript
+- Tailwind CSS
+- PostgreSQL
+- Prisma ORM
+- Docker Compose para desarrollo local
+- Vercel como destino de deployment
+
+## Requisitos
+
+- Node.js 22 o superior
+- npm
+- Docker Desktop (necesario desde la Fase 2 para PostgreSQL local)
+
+## Desarrollo
+
+1. Instalar dependencias:
+
+   ```bash
+   npm install
+   ```
+
+2. Copiar `.env.example` como `.env` y completar los valores locales.
+
+3. Iniciar el servidor web:
+
+   ```bash
+   npm run dev
+   ```
+
+4. Abrir http://localhost:3000.
+
+## PostgreSQL local
+
+La base local se ejecuta con Docker Compose:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker compose up -d
+docker compose down
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Las migraciones, el seed y el modelo se configuraran en la Fase 2.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Para la Fase 2, con Docker Desktop iniciado:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+docker compose up -d
+npm run db:migrate -- --name init
+npm run db:seed
+```
 
-## Learn More
+Para detener o reiniciar la base:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+docker compose down
+npm run db:reset
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Comandos disponibles
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run lint
+npm run build
+npm run db:generate
+npm run db:format
+npm run db:validate
+npm run db:migrate
+npm run db:seed
+npm run db:reset
+```
 
-## Deploy on Vercel
+## Estado del proyecto
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+La Fase 2 contiene el modelo relacional de Prisma, la configuracion del seed y los datos ficticios preparados. La migracion y el seed deben ejecutarse cuando Docker Desktop tenga disponible PostgreSQL local.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+El modelo incluye `Church`, `User`, `Role`, `UserRole`, `ActivityType`, `Activity`, `VisitedPerson`, `ActivityUser`, `AuditLog` y `PasswordResetToken`.
+
+## Decisiones del MVP
+
+- Zona horaria oficial: `America/Argentina/Buenos_Aires`.
+- `USER` solo puede editar y cancelar sus propias actividades.
+- Las actividades se cancelan con estado `CANCELADA`.
+- Las personas con historial se marcan como inactivas y conservan sus datos.
+- La recuperacion de contrasena usara email con proveedor desacoplado.
