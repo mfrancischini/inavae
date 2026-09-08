@@ -1,17 +1,7 @@
-"use client";
-
 import Image from "next/image";
-import { FormEvent, useState } from "react";
+import { LoginForm } from "./login-form";
 
 export default function Home() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [message, setMessage] = useState("");
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setMessage("El acceso estará disponible cuando conectemos la autenticación.");
-  }
-
   return (
     <main className="login-shell">
       <section className="login-brand-panel">
@@ -41,29 +31,7 @@ export default function Home() {
             <p>Ingresá para continuar con la gestión de la iglesia.</p>
           </div>
 
-          <form className="login-form" onSubmit={handleSubmit}>
-            <label htmlFor="email">Correo electrónico</label>
-            <input id="email" name="email" type="email" placeholder="nombre@ejemplo.com" autoComplete="email" required />
-
-            <div className="password-label-row">
-              <label htmlFor="password">Contraseña</label>
-              <button type="button" className="text-button" onClick={() => setMessage("La recuperación de contraseña se habilitará próximamente.")}>¿Olvidaste tu contraseña?</button>
-            </div>
-            <div className="password-field">
-              <input id="password" name="password" type={showPassword ? "text" : "password"} placeholder="••••••••" autoComplete="current-password" required />
-              <button type="button" className="password-toggle" aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"} onClick={() => setShowPassword(!showPassword)}>
-                {showPassword ? "Ocultar" : "Mostrar"}
-              </button>
-            </div>
-
-            <label className="remember-option">
-              <input type="checkbox" name="remember" />
-              <span>Recordar este dispositivo</span>
-            </label>
-
-            <button type="submit" className="submit-button">Ingresar <span aria-hidden="true">→</span></button>
-            {message && <p className="form-message" role="status">{message}</p>}
-          </form>
+          <LoginForm />
           <p className="form-footer">Iglesia Carapachay <span>·</span> Sistema interno</p>
         </div>
       </section>

@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -12,6 +6,213 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Church {
+  id            String          @id @default(cuid())
+  name          String
+  slug          String          @unique
+  timezone      String          @default("America/Argentina/Buenos_Aires")
+  isActive      Boolean         @default(true)
+  createdAt     DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime        @updatedAt @db.Timestamptz(3)
+  activities    Activity[]
+  activityTypes ActivityType[]
+  auditLogs     AuditLog[]
+  companions    Companion[]
+  scHouseholds  ScHousehold[]
+  users         User[]
+  visitedPeople VisitedPerson[]
+}
+
+model Role {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  description String?
+  createdAt   DateTime   @default(now()) @db.Timestamptz(3)
+  users       UserRole[]
+}
+
+model User {
+  id                   String               @id @default(cuid())
+  churchId             String
+  firstName            String
+  lastName             String
+  email                String               @unique
+  passwordHash         String
+  status               UserStatus           @default(ACTIVE)
+  lastLoginAt          DateTime?            @db.Timestamptz(3)
+  createdAt            DateTime             @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime             @updatedAt @db.Timestamptz(3)
+  createdActivities    Activity[]           @relation("ActivityCreator")
+  activityParticipates ActivityUser[]
+  auditLogs            AuditLog[]
+  resetTokens          PasswordResetToken[]
+  createdHouseholds    ScHousehold[]        @relation("HouseholdCreator")
+  church               Church               @relation(fields: [churchId], references: [id])
+  roles                UserRole[]
+
+  @@index([churchId, status])
+}
+
+model UserRole {
+  id        String   @id @default(cuid())
+  userId    String
+  roleId    String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  role      Role     @relation(fields: [roleId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+  @@index([roleId])
+}
+
+model ActivityType {
+  id                    String     @id @default(cuid())
+  churchId              String
+  code                  String
+  name                  String
+  description           String?
+  requiresVisitedPerson Boolean    @default(false)
+  isActive              Boolean    @default(true)
+  createdAt             DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt             DateTime   @updatedAt @db.Timestamptz(3)
+  activities            Activity[]
+  church                Church     @relation(fields: [churchId], references: [id])
+
+  @@unique([churchId, code])
+  @@index([churchId, isActive])
+}
+
+model VisitedPerson {
+  id         String              @id @default(cuid())
+  churchId   String
+  firstName  String
+  lastName   String
+  phone      String?
+  address    String?
+  notes      String?
+  status     VisitedPersonStatus @default(ACTIVE)
+  createdAt  DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime            @updatedAt @db.Timestamptz(3)
+  activities Activity[]
+  church     Church              @relation(fields: [churchId], references: [id])
+
+  @@index([churchId, status])
+  @@index([churchId, lastName, firstName])
+}
+
+model Companion {
+  id             String         @id @default(cuid())
+  churchId       String
+  firstName      String
+  lastName       String
+  phone          String?
+  status         UserStatus     @default(ACTIVE)
+  createdAt      DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime       @updatedAt @db.Timestamptz(3)
+  participations ActivityUser[]
+  church         Church         @relation(fields: [churchId], references: [id])
+
+  @@index([churchId, status])
+  @@index([churchId, lastName, firstName])
+}
+
+model Activity {
+  id              String         @id @default(cuid())
+  churchId        String
+  activityTypeId  String
+  scheduledAt     DateTime       @db.Timestamptz(3)
+  place           String?
+  visitedPersonId String?
+  notes           String?
+  status          ActivityStatus @default(SCHEDULED)
+  createdById     String
+  createdAt       DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime       @updatedAt @db.Timestamptz(3)
+  scHouseholdId   String?
+  activityType    ActivityType   @relation(fields: [activityTypeId], references: [id])
+  church          Church         @relation(fields: [churchId], references: [id])
+  createdBy       User           @relation("ActivityCreator", fields: [createdById], references: [id])
+  scHousehold     ScHousehold?   @relation(fields: [scHouseholdId], references: [id], onDelete: Restrict)
+  visitedPerson   VisitedPerson? @relation(fields: [visitedPersonId], references: [id], onDelete: Restrict)
+  participants    ActivityUser[]
+
+  @@index([churchId, scheduledAt])
+  @@index([churchId, status])
+  @@index([visitedPersonId])
+  @@index([scHouseholdId])
+  @@index([createdById])
+}
+
+model ScHousehold {
+  id            String          @id @default(cuid())
+  churchId      String
+  name          String
+  address       String?
+  phone         String?
+  notes         String?
+  frequencyDays Int
+  lastVisitAt   DateTime?       @db.Timestamptz(3)
+  nextVisitAt   DateTime?
+  status        HouseholdStatus @default(ACTIVE)
+  createdAt     DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime        @updatedAt @db.Timestamptz(3)
+  createdById   String
+  activities    Activity[]
+  church        Church          @relation(fields: [churchId], references: [id])
+  createdBy     User            @relation("HouseholdCreator", fields: [createdById], references: [id])
+
+  @@index([churchId, status])
+  @@index([churchId, nextVisitAt])
+  @@index([createdById])
+}
+
+model ActivityUser {
+  id          String     @id @default(cuid())
+  activityId  String
+  userId      String?
+  createdAt   DateTime   @default(now()) @db.Timestamptz(3)
+  companionId String?
+  activity    Activity   @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  companion   Companion? @relation(fields: [companionId], references: [id])
+  user        User?      @relation(fields: [userId], references: [id])
+
+  @@unique([activityId, userId])
+  @@unique([activityId, companionId])
+  @@index([companionId])
+  @@index([userId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  churchId  String
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  church    Church   @relation(fields: [churchId], references: [id])
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([churchId, createdAt])
+  @@index([entity, entityId])
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime  @db.Timestamptz(3)
+  usedAt    DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
 }
 
 enum UserStatus {
@@ -30,160 +231,7 @@ enum ActivityStatus {
   CANCELLED
 }
 
-model Church {
-  id            String          @id @default(cuid())
-  name          String
-  slug          String          @unique
-  timezone      String          @default("America/Argentina/Buenos_Aires")
-  isActive      Boolean         @default(true)
-  users         User[]
-  activityTypes ActivityType[]
-  activities    Activity[]
-  visitedPeople VisitedPerson[]
-  auditLogs     AuditLog[]
-  createdAt     DateTime        @default(now()) @db.Timestamptz(3)
-  updatedAt     DateTime        @updatedAt @db.Timestamptz(3)
-}
-
-model Role {
-  id          String     @id @default(cuid())
-  name        String     @unique
-  description String?
-  users       UserRole[]
-  createdAt   DateTime   @default(now()) @db.Timestamptz(3)
-}
-
-model User {
-  id                   String               @id @default(cuid())
-  churchId             String
-  church               Church               @relation(fields: [churchId], references: [id], onDelete: Restrict)
-  firstName            String
-  lastName             String
-  email                String               @unique
-  passwordHash         String
-  status               UserStatus           @default(ACTIVE)
-  lastLoginAt          DateTime?            @db.Timestamptz(3)
-  roles                UserRole[]
-  createdActivities    Activity[]           @relation("ActivityCreator")
-  activityParticipates ActivityUser[]
-  auditLogs            AuditLog[]
-  resetTokens          PasswordResetToken[]
-  createdAt            DateTime             @default(now()) @db.Timestamptz(3)
-  updatedAt            DateTime             @updatedAt @db.Timestamptz(3)
-
-  @@index([churchId, status])
-}
-
-model UserRole {
-  id        String   @id @default(cuid())
-  userId    String
-  roleId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role      Role     @relation(fields: [roleId], references: [id], onDelete: Restrict)
-  createdAt DateTime @default(now()) @db.Timestamptz(3)
-
-  @@unique([userId, roleId])
-  @@index([roleId])
-}
-
-model ActivityType {
-  id                    String     @id @default(cuid())
-  churchId              String
-  church                Church     @relation(fields: [churchId], references: [id], onDelete: Restrict)
-  code                  String
-  name                  String
-  description           String?
-  requiresVisitedPerson Boolean    @default(false)
-  isActive              Boolean    @default(true)
-  activities            Activity[]
-  createdAt             DateTime   @default(now()) @db.Timestamptz(3)
-  updatedAt             DateTime   @updatedAt @db.Timestamptz(3)
-
-  @@unique([churchId, code])
-  @@index([churchId, isActive])
-}
-
-model VisitedPerson {
-  id         String              @id @default(cuid())
-  churchId   String
-  church     Church              @relation(fields: [churchId], references: [id], onDelete: Restrict)
-  firstName  String
-  lastName   String
-  phone      String?
-  address    String?
-  notes      String?
-  status     VisitedPersonStatus @default(ACTIVE)
-  activities Activity[]
-  createdAt  DateTime            @default(now()) @db.Timestamptz(3)
-  updatedAt  DateTime            @updatedAt @db.Timestamptz(3)
-
-  @@index([churchId, status])
-  @@index([churchId, lastName, firstName])
-}
-
-model Activity {
-  id              String         @id @default(cuid())
-  churchId        String
-  church          Church         @relation(fields: [churchId], references: [id], onDelete: Restrict)
-  activityTypeId  String
-  activityType    ActivityType   @relation(fields: [activityTypeId], references: [id], onDelete: Restrict)
-  scheduledAt     DateTime       @db.Timestamptz(3)
-  place           String?
-  visitedPersonId String?
-  visitedPerson   VisitedPerson? @relation(fields: [visitedPersonId], references: [id], onDelete: Restrict)
-  notes           String?
-  status          ActivityStatus @default(SCHEDULED)
-  createdById     String
-  createdBy       User           @relation("ActivityCreator", fields: [createdById], references: [id], onDelete: Restrict)
-  participants    ActivityUser[]
-  createdAt       DateTime       @default(now()) @db.Timestamptz(3)
-  updatedAt       DateTime       @updatedAt @db.Timestamptz(3)
-
-  @@index([churchId, scheduledAt])
-  @@index([churchId, status])
-  @@index([visitedPersonId])
-  @@index([createdById])
-}
-
-model ActivityUser {
-  id         String   @id @default(cuid())
-  activityId String
-  userId     String
-  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  user       User     @relation(fields: [userId], references: [id], onDelete: Restrict)
-  createdAt  DateTime @default(now()) @db.Timestamptz(3)
-
-  @@unique([activityId, userId])
-  @@index([userId])
-}
-
-model AuditLog {
-  id        String   @id @default(cuid())
-  churchId  String
-  church    Church   @relation(fields: [churchId], references: [id], onDelete: Restrict)
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  action    String
-  entity    String
-  entityId  String?
-  metadata  Json?
-  ipAddress String?
-  userAgent String?
-  createdAt DateTime @default(now()) @db.Timestamptz(3)
-
-  @@index([churchId, createdAt])
-  @@index([entity, entityId])
-  @@index([userId])
-}
-
-model PasswordResetToken {
-  id        String    @id @default(cuid())
-  userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tokenHash String    @unique
-  expiresAt DateTime  @db.Timestamptz(3)
-  usedAt    DateTime? @db.Timestamptz(3)
-  createdAt DateTime  @default(now()) @db.Timestamptz(3)
-
-  @@index([userId, expiresAt])
+enum HouseholdStatus {
+  ACTIVE
+  INACTIVE
 }
