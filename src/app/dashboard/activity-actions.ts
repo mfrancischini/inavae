@@ -127,7 +127,7 @@ export async function createActivity(_previousState: ActivityState, formData: Fo
     if (completed && activityType.code === "SC") {
       const visitedAt = new Date();
       const householdSchedule = await prisma.scHousehold.findUnique({ where: { id: selectedHousehold.id }, select: { frequencyDays: true } });
-      if (householdSchedule) {
+      if (householdSchedule?.frequencyDays) {
         await prisma.scHousehold.update({
           where: { id: scHouseholdId },
           data: { lastVisitAt: visitedAt, nextVisitAt: new Date(visitedAt.getTime() + householdSchedule.frequencyDays * 86400000) },
@@ -186,7 +186,7 @@ export async function updateActivity(_previousState: ActivityState, formData: Fo
     if (completed && activityType.code === "SC") {
       const visitedAt = new Date();
       const householdSchedule = await prisma.scHousehold.findUnique({ where: { id: household.id }, select: { frequencyDays: true } });
-      if (householdSchedule) {
+      if (householdSchedule?.frequencyDays) {
         await prisma.scHousehold.update({
           where: { id: household.id },
           data: { lastVisitAt: visitedAt, nextVisitAt: new Date(visitedAt.getTime() + householdSchedule.frequencyDays * 86400000) },
@@ -249,7 +249,7 @@ export async function completeActivity(formData: FormData) {
         where: { id: activity.scHouseholdId },
         select: { frequencyDays: true },
       });
-      if (household) {
+      if (household?.frequencyDays) {
         await transaction.scHousehold.update({
           where: { id: activity.scHouseholdId },
           data: {

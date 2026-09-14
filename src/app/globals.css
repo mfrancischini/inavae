@@ -5,9 +5,9 @@
   --foreground: #18252b;
   --ink: #18252b;
   --muted: #66777e;
-  --blue: #4f91c2;
-  --blue-deep: #214d6d;
-  --coral: #d86d5d;
+  --blue: #5793c9;
+  --blue-deep: #5793c9;
+  --coral: #e65b5a;
   --line: #d8e1e4;
 }
 
@@ -423,7 +423,7 @@ input {
 .dashboard-kicker {
   margin: 0 0 10px;
   color: var(--coral);
-  font-size: 0.7rem;
+  font-size: 0.99rem;
   font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -463,11 +463,28 @@ input {
   letter-spacing: 0.08em;
 }
 
+.dashboard-signout {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: #fff;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.dashboard-signout:hover {
+  border-color: var(--coral);
+  color: var(--coral);
+}
+
 .dashboard-stats {
   display: grid;
   max-width: 1180px;
   margin: 0 auto 58px;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 14px;
 }
 
@@ -800,6 +817,13 @@ input {
   text-decoration: underline;
 }
 
+.household-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
 .household-detail-header {
   max-width: 1180px;
 }
@@ -881,6 +905,51 @@ input {
   margin: 0;
   color: var(--muted);
   font-size: 0.76rem;
+}
+
+.household-members {
+  max-width: 1180px;
+}
+
+.member-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.member-row {
+  display: grid;
+  align-items: center;
+  grid-template-columns: minmax(190px, 1fr) minmax(180px, 1fr) auto;
+  gap: 22px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+
+.member-detail,
+.member-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.member-detail strong {
+  color: var(--ink);
+  font-size: 0.85rem;
+}
+
+.member-meta span {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.member-form {
+  margin-top: 22px;
+}
+
+.member-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .household-search {
@@ -1013,10 +1082,21 @@ input {
   color: var(--blue-deep);
 }
 
-.report-download-button {
-  background: #36714c;
+
+.report-preview-button:hover{
+  background: var(--blue-deep);
   color: #fff;
 }
+.report-download-button {
+  background: #7dbb94;
+  color: #fff;
+}
+
+.report-download-button:hover {
+  background: #336747;
+  color: #fff;
+}
+
 
 .report-hint {
   margin: 16px 0;

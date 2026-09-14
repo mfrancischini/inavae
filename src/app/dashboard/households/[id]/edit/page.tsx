@@ -45,7 +45,7 @@ export default async function EditHouseholdPage({ params }: { params: Promise<{ 
           <input type="hidden" name="householdId" value={household.id} />
           <div className="activity-form-grid">
             <label>Nombre del hogar<input name="name" required defaultValue={household.name} /></label>
-            <label>Periodicidad en días<input name="frequencyDays" type="number" min="1" required defaultValue={household.frequencyDays} /></label>
+            <label>Periodicidad en días<input name="frequencyDays" type="number" min="1" defaultValue={household.frequencyDays ?? ""} /></label>
             <label>Próxima visita<input name="nextVisitAt" type="date" defaultValue={formatDateInput(household.nextVisitAt)} /></label>
             <label>Dirección<input name="address" defaultValue={household.address ?? ""} /></label>
             <label>Teléfono<input name="phone" type="tel" defaultValue={household.phone ?? ""} /></label>

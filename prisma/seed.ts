@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 const timezone = "America/Argentina/Buenos_Aires";
 
 async function main() {
-  const passwordHash = await bcrypt.hash("InavaeDemo2026!", 12);
+  const passwordHash = await bcrypt.hash("123456", 12);
   const church = await prisma.church.upsert({
     where: { slug: "carapachay" },
     update: { name: "Iglesia de Carapachay", timezone, isActive: true },
@@ -28,9 +28,14 @@ async function main() {
     create: { name: "USER", description: "Gestiona sus actividades y consulta informacion" },
   });
 
+  await prisma.user.updateMany({
+    where: { email: "admin@inavae.local" },
+    data: { email: "carapa@inavae.local" },
+  });
+
   const users = await Promise.all(
     [
-      { firstName: "Mariano", lastName: "Administrador", email: "admin@inavae.local", roleId: adminRole.id },
+      { firstName: "Mariano", lastName: "Administrador", email: "carapa@inavae.local", roleId: adminRole.id },
       { firstName: "Carlos", lastName: "Gomez", email: "carlos@inavae.local", roleId: userRole.id },
       { firstName: "Pedro", lastName: "Rodriguez", email: "pedro@inavae.local", roleId: userRole.id },
     ].map(async (data) => {

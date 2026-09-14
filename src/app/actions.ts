@@ -85,3 +85,9 @@ export async function getSessionUserId() {
 
   return token.split(".")[0] ?? null;
 }
+
+export async function signOut() {
+  const cookieStore = await cookies();
+  cookieStore.delete(sessionCookieName);
+  redirect("/");
+}

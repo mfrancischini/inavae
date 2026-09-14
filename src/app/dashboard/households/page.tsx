@@ -52,7 +52,7 @@ export default async function HouseholdsPage({ searchParams }: { searchParams: P
           <form className="activity-form household-form" action={createHousehold}>
             <div className="activity-form-grid">
               <label>Nombre del hogar<input name="name" required placeholder="Ej. Familia González" /></label>
-              <label>Periodicidad en días<input name="frequencyDays" type="number" min="1" required placeholder="30" /></label>
+              <label>Periodicidad en días<input name="frequencyDays" type="number" min="1" placeholder="Opcional: 30" /></label>
               <label>Próxima visita<input name="nextVisitAt" type="date" /></label>
               <label>Dirección<input name="address" placeholder="Calle y número" /></label>
               <label>Teléfono<input name="phone" type="tel" /></label>
@@ -78,7 +78,10 @@ export default async function HouseholdsPage({ searchParams }: { searchParams: P
               <div>
                 <h3><Link className="household-name-link" href={`/dashboard/households/${household.id}`}>{household.name}</Link></h3>
               </div>
-              <Link className="household-edit-link" href={`/dashboard/households/${household.id}/edit`}>Modificar</Link>
+              <div className="household-card-actions">
+                <Link className="household-edit-link" href={`/dashboard/households/${household.id}/members`}>Integrantes</Link>
+                <Link className="household-edit-link" href={`/dashboard/households/${household.id}/edit`}>Modificar</Link>
+              </div>
             </article>
           })}
           {totalPages > 1 && (

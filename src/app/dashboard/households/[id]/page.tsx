@@ -38,6 +38,7 @@ export default async function HouseholdDetailPage({ params }: { params: Promise<
         frequencyDays: true,
         lastVisitAt: true,
         nextVisitAt: true,
+        _count: { select: { members: { where: { status: "ACTIVE" } } } },
         activities: {
           orderBy: { scheduledAt: "desc" },
           select: {
@@ -71,15 +72,17 @@ export default async function HouseholdDetailPage({ params }: { params: Promise<
         </div>
         <div className="dashboard-actions">
           <Link className="activity-cancel" href="/dashboard/households">Volver a hogares</Link>
+          <Link className="dashboard-action" href={`/dashboard/households/${household.id}/members`}>Modificar integrantes</Link>
           <Link className="dashboard-action" href={`/dashboard/households/${household.id}/edit`}>Modificar</Link>
         </div>
       </header>
 
       <section className="household-detail-summary" aria-label="Datos del hogar">
         <div><span>Dirección</span><strong>{household.address ?? "Sin dirección"}</strong></div>
-        <div><span>Periodicidad</span><strong>Cada {household.frequencyDays} días</strong></div>
+        <div><span>Periodicidad</span><strong>{household.frequencyDays ? `Cada ${household.frequencyDays} días` : "Sin seguimiento periódico"}</strong></div>
         <div><span>Última visita</span><strong>{household.lastVisitAt ? dateFormatter.format(household.lastVisitAt) : "Sin visitas"}</strong></div>
         <div><span>Próxima visita</span><strong>{household.nextVisitAt ? dateFormatter.format(household.nextVisitAt) : "Sin fecha"}</strong></div>
+        <div><span>Integrantes</span><strong><Link href={`/dashboard/households/${household.id}/members`}>{household._count.members} cargados</Link></strong></div>
       </section>
 
       {household.notes && <p className="household-detail-note">{household.notes}</p>}

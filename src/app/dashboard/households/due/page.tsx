@@ -14,7 +14,8 @@ function daysUntil(date: Date) {
   return Math.ceil((date.getTime() - Date.now()) / 86400000);
 }
 
-function getEffectiveNextVisit(household: { createdAt: Date; nextVisitAt: Date | null; lastVisitAt: Date | null; frequencyDays: number }) {
+function getEffectiveNextVisit(household: { createdAt: Date; nextVisitAt: Date | null; lastVisitAt: Date | null; frequencyDays: number | null }) {
+  if (!household.frequencyDays) return null;
   if (household.nextVisitAt && (household.lastVisitAt || household.nextVisitAt.getTime() > household.createdAt.getTime() + 86400000)) {
     return household.nextVisitAt;
   }
@@ -44,7 +45,7 @@ export default async function HouseholdDuePage() {
 
   const dueRows = households.map((household) => ({
     ...household,
-    nextVisitAt: getEffectiveNextVisit(household),
+    nextVisitAt: getEffectiveNextVisit(household) as Date,
   })).map((household) => ({
     ...household,
     days: daysUntil(household.nextVisitAt),
