@@ -1,15 +1,23 @@
-import { HouseholdMemberRelation } from "@/generated/prisma";
+import { HouseholdMemberTask } from "@/generated/prisma";
 
-const householdMemberRelations = new Set<string>(Object.values(HouseholdMemberRelation));
+const householdMemberTasks = new Set<string>(Object.values(HouseholdMemberTask));
+
+function parseHouseholdMemberTasks(formData: FormData): HouseholdMemberTask[] {
+  const values = formData.getAll("tasks").map((value) => String(value));
+  const tasks = new Set<HouseholdMemberTask>();
+  for (const value of values) {
+    if (householdMemberTasks.has(value)) tasks.add(value as HouseholdMemberTask);
+  }
+  return [...tasks];
+}
 
 export function parseHouseholdMemberInput(formData: FormData) {
   const firstName = String(formData.get("firstName") ?? "").trim();
   const lastName = String(formData.get("lastName") ?? "").trim();
-  const relationshipValue = String(formData.get("relationship") ?? "OTRO").trim();
   const phone = String(formData.get("phone") ?? "").trim();
   const birthDateValue = String(formData.get("birthDate") ?? "").trim();
 
-  if (!firstName || !lastName || !householdMemberRelations.has(relationshipValue)) return null;
+  if (!firstName || !lastName) return null;
 
   let birthDate: Date | null = null;
   if (birthDateValue) {
@@ -20,8 +28,8 @@ export function parseHouseholdMemberInput(formData: FormData) {
   return {
     firstName,
     lastName,
-    relationship: relationshipValue as HouseholdMemberRelation,
     birthDate,
     phone: phone || null,
+    tasks: parseHouseholdMemberTasks(formData),
   };
 }

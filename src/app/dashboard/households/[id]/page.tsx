@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { prisma } from "@/lib/prisma";
 import { getSessionUserId } from "../../../actions";
+import { BackToDashboardLink } from "../../back-to-dashboard-link";
 
 const dateFormatter = new Intl.DateTimeFormat("es-AR", {
   dateStyle: "medium",
@@ -66,13 +67,14 @@ export default async function HouseholdDetailPage({ params }: { params: Promise<
     <main className="dashboard-shell">
       <header className="dashboard-header household-detail-header">
         <div>
+          <BackToDashboardLink />
           <p className="dashboard-kicker">{user.church.name} · Hogar SC</p>
           <h1>{household.name}</h1>
           <p className="dashboard-intro">Historial de visitas y personas que participaron.</p>
         </div>
         <div className="dashboard-actions">
           <Link className="activity-cancel" href="/dashboard/households">Volver a hogares</Link>
-          <Link className="dashboard-action" href={`/dashboard/households/${household.id}/members`}>Modificar integrantes</Link>
+          <Link className="dashboard-action-2" href={`/dashboard/households/${household.id}/members`}>Modificar integrantes</Link>
           <Link className="dashboard-action" href={`/dashboard/households/${household.id}/edit`}>Modificar</Link>
         </div>
       </header>

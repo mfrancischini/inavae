@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getSessionUserId } from "../../../../../../actions";
 import { updateHouseholdMember } from "../../../../../household-actions";
+import { householdMemberTaskLabels, householdMemberTaskOptions } from "../../../../../household-member-tasks";
+import { BackToDashboardLink } from "../../../../../back-to-dashboard-link";
 
 function formatDateInput(date: Date | null) {
   if (!date) return "";
@@ -31,10 +33,10 @@ export default async function EditHouseholdMemberPage({ params }: { params: Prom
         householdId: true,
         firstName: true,
         lastName: true,
-        relationship: true,
         birthDate: true,
         phone: true,
         status: true,
+        tasks: true,
         household: { select: { id: true, churchId: true, createdById: true, name: true } },
       },
     }),
@@ -55,6 +57,7 @@ export default async function EditHouseholdMemberPage({ params }: { params: Prom
   return (
     <main className="dashboard-shell">
       <section className="activity-editor">
+        <BackToDashboardLink />
         <p className="dashboard-kicker">{user.church.name} · {member.household.name}</p>
         <h1>Modificar integrante</h1>
         <p className="dashboard-intro">Actualizá los datos de este integrante del hogar.</p>
@@ -64,17 +67,19 @@ export default async function EditHouseholdMemberPage({ params }: { params: Prom
           <div className="activity-form-grid">
             <label>Nombre<input name="firstName" required defaultValue={member.firstName} /></label>
             <label>Apellido<input name="lastName" required defaultValue={member.lastName} /></label>
-            <label>Parentesco
-              <select name="relationship" defaultValue={member.relationship}>
-                <option value="PADRE">Padre</option>
-                <option value="MADRE">Madre</option>
-                <option value="HIJO">Hijo</option>
-                <option value="HIJA">Hija</option>
-                <option value="OTRO">Otro</option>
-              </select>
-            </label>
             <label>Fecha de nacimiento<input name="birthDate" type="date" defaultValue={formatDateInput(member.birthDate)} /></label>
             <label>Teléfono<input name="phone" type="tel" defaultValue={member.phone ?? ""} /></label>
+            <fieldset className="activity-form-fieldset activity-form-wide">
+              <legend>Tareas</legend>
+              <div className="activity-user-options">
+                {householdMemberTaskOptions.map((task) => (
+                  <label className="activity-user-option" key={task}>
+                    <input type="checkbox" name="tasks" value={task} defaultChecked={member.tasks.includes(task)} />
+                    <span>{householdMemberTaskLabels[task]}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
           </div>
           <div className="activity-form-actions">
             <a className="activity-cancel" href={`/dashboard/households/${member.householdId}/members`}>Cancelar</a>

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getSessionUserId } from "../../../../actions";
 import { prisma } from "@/lib/prisma";
 import { updateHousehold } from "../../../household-actions";
+import { BackToDashboardLink } from "../../../back-to-dashboard-link";
 
 function formatDateInput(date: Date | null) {
   if (!date) return "";
@@ -38,6 +39,7 @@ export default async function EditHouseholdPage({ params }: { params: Promise<{ 
   return (
     <main className="dashboard-shell">
       <section className="activity-editor">
+        <BackToDashboardLink />
         <p className="dashboard-kicker">{user.church.name} · Santa Cena</p>
         <h1>Modificar hogar</h1>
         <p className="dashboard-intro">Actualizá la información y la periodicidad de este hogar.</p>

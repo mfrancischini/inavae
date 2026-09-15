@@ -6,11 +6,13 @@ export default function Home() {
     <main className="login-shell">
       <section className="login-brand-panel">
         <div className="brand-orbit brand-orbit-one" />
+
         <div className="brand-orbit brand-orbit-two" />
+
         <div className="brand-content">
-          <Image className="brand-logo" src="/inasud-logo.png" alt="Iglesia Nueva Apostólica Sud América" width={512} height={168} priority />
+          <p className="brand-kicker">INAVAE · CARAPACHAY</p>
+
           <div className="brand-copy">
-            <p className="brand-kicker">INAVAE · CARAPACHAY</p>
             <h1>Una comunidad que se organiza para servir.</h1>
             <p>Planificá visitas, actividades y encuentros con una mirada clara sobre cada persona.</p>
           </div>

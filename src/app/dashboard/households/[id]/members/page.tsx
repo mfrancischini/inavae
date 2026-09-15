@@ -4,19 +4,13 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getSessionUserId } from "../../../../actions";
 import { addHouseholdMember, deactivateHouseholdMember } from "../../../household-actions";
+import { householdMemberTaskLabels, householdMemberTaskOptions } from "../../../household-member-tasks";
+import { BackToDashboardLink } from "../../../back-to-dashboard-link";
 
 const birthDateFormatter = new Intl.DateTimeFormat("es-AR", {
   dateStyle: "medium",
   timeZone: "America/Argentina/Buenos_Aires",
 });
-
-const relationLabels = {
-  PADRE: "Padre",
-  MADRE: "Madre",
-  HIJO: "Hijo",
-  HIJA: "Hija",
-  OTRO: "Otro",
-} as const;
 
 export default async function HouseholdMembersPage({ params }: { params: Promise<{ id: string }> }) {
   const userId = await getSessionUserId();
@@ -38,7 +32,7 @@ export default async function HouseholdMembersPage({ params }: { params: Promise
         members: {
           where: { status: "ACTIVE" },
           orderBy: [{ createdAt: "asc" }],
-          select: { id: true, firstName: true, lastName: true, relationship: true, birthDate: true, phone: true },
+          select: { id: true, firstName: true, lastName: true, birthDate: true, phone: true, tasks: true },
         },
       },
     }),
@@ -53,6 +47,7 @@ export default async function HouseholdMembersPage({ params }: { params: Promise
     <main className="dashboard-shell">
       <header className="dashboard-header household-detail-header">
         <div>
+          <BackToDashboardLink />
           <p className="dashboard-kicker">{user.church.name} · Hogar SC</p>
           <h1>{household.name}</h1>
           <p className="dashboard-intro">Integrantes de la familia para este hogar.</p>
@@ -77,11 +72,19 @@ export default async function HouseholdMembersPage({ params }: { params: Promise
               <article className="member-row" key={member.id}>
                 <div className="member-detail">
                   <strong>{member.firstName} {member.lastName}</strong>
-                  <span className="activity-column-label">{relationLabels[member.relationship]}</span>
                 </div>
                 <div className="member-meta">
                   <span>{member.birthDate ? birthDateFormatter.format(member.birthDate) : "Sin fecha de nacimiento"}</span>
                   <span>{member.phone ?? "Sin teléfono"}</span>
+                  <div className="member-tags">
+                    {member.tasks.length === 0 ? (
+                      <span className="member-tag member-tag-empty">Sin tareas asignadas</span>
+                    ) : (
+                      member.tasks.map((task) => (
+                        <span className="member-tag" key={task}>{householdMemberTaskLabels[task]}</span>
+                      ))
+                    )}
+                  </div>
                 </div>
                 {canManage && (
                   <div className="member-row-actions">
@@ -104,17 +107,19 @@ export default async function HouseholdMembersPage({ params }: { params: Promise
             <div className="activity-form-grid">
               <label>Nombre<input name="firstName" required placeholder="Ej. Juan" /></label>
               <label>Apellido<input name="lastName" required placeholder="Ej. Fernández" /></label>
-              <label>Parentesco
-                <select name="relationship" defaultValue="OTRO">
-                  <option value="PADRE">Padre</option>
-                  <option value="MADRE">Madre</option>
-                  <option value="HIJO">Hijo</option>
-                  <option value="HIJA">Hija</option>
-                  <option value="OTRO">Otro</option>
-                </select>
-              </label>
               <label>Fecha de nacimiento<input name="birthDate" type="date" /></label>
               <label>Teléfono<input name="phone" type="tel" /></label>
+              <fieldset className="activity-form-fieldset activity-form-wide">
+                <legend>Tareas</legend>
+                <div className="activity-user-options">
+                  {householdMemberTaskOptions.map((task) => (
+                    <label className="activity-user-option" key={task}>
+                      <input type="checkbox" name="tasks" value={task} />
+                      <span>{householdMemberTaskLabels[task]}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
             </div>
             <div className="activity-form-actions">
               <button className="submit-button activity-submit" type="submit">Agregar integrante <span aria-hidden="true">→</span></button>

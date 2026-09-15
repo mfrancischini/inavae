@@ -170,17 +170,17 @@ model ScHousehold {
 }
 
 model HouseholdMember {
-  id           String                  @id @default(cuid())
-  householdId  String
-  firstName    String
-  lastName     String
-  relationship HouseholdMemberRelation @default(OTRO)
-  birthDate    DateTime?               @db.Date
-  phone        String?
-  status       HouseholdMemberStatus   @default(ACTIVE)
-  createdAt    DateTime                @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime                @updatedAt @db.Timestamptz(3)
-  household    ScHousehold             @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  id          String                @id @default(cuid())
+  householdId String
+  firstName   String
+  lastName    String
+  birthDate   DateTime?             @db.Date
+  phone       String?
+  status      HouseholdMemberStatus @default(ACTIVE)
+  tasks       HouseholdMemberTask[] @default([])
+  createdAt   DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime              @updatedAt @db.Timestamptz(3)
+  household   ScHousehold           @relation(fields: [householdId], references: [id], onDelete: Cascade)
 
   @@index([householdId, status])
 }
@@ -253,15 +253,15 @@ enum HouseholdStatus {
   INACTIVE
 }
 
-enum HouseholdMemberRelation {
-  PADRE
-  MADRE
-  HIJO
-  HIJA
-  OTRO
-}
-
 enum HouseholdMemberStatus {
   ACTIVE
   INACTIVE
+}
+
+enum HouseholdMemberTask {
+  CORO
+  ENSENANZA
+  LIMPIEZA
+  ARREGLO_FLORAL
+  RESUMEN
 }

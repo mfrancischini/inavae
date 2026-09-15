@@ -4,6 +4,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getSessionUserId } from "../../../actions";
 import { ActivityForm } from "../../activity-form";
+import { BackToDashboardLink } from "../../back-to-dashboard-link";
 
 export default async function NewActivityPage() {
   const userId = await getSessionUserId();
@@ -44,6 +45,7 @@ export default async function NewActivityPage() {
   return (
     <main className="dashboard-shell">
       <section className="activity-editor">
+        <BackToDashboardLink />
         <p className="dashboard-kicker">{user.church.name} · Agenda</p>
         <h1>Nueva actividad</h1>
         <p className="dashboard-intro">Completá los datos para sumar una actividad a la agenda.</p>
@@ -54,9 +56,6 @@ export default async function NewActivityPage() {
           users={users.map((person) => ({ id: person.id, name: `${person.firstName} ${person.lastName}` }))}
           households={households}
         />
-        <div className="activity-back-link">
-          <Link href="/dashboard">Volver al dashboard</Link>
-        </div>
       </section>
     </main>
   );

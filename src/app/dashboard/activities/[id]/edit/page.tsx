@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getSessionUserId } from "../../../../actions";
 import { ActivityForm } from "../../../activity-form";
+import { BackToDashboardLink } from "../../../back-to-dashboard-link";
 
 function formatDateTimeLocal(date: Date) {
   const parts = new Intl.DateTimeFormat("sv-SE", {
@@ -83,6 +84,7 @@ export default async function EditActivityPage({ params }: { params: Promise<{ i
   return (
     <main className="dashboard-shell">
       <section className="activity-editor">
+        <BackToDashboardLink />
         <p className="dashboard-kicker">{user.church.name} · Agenda</p>
         <h1>Modificar actividad</h1>
         <p className="dashboard-intro">Actualizá los datos de la actividad seleccionada.</p>

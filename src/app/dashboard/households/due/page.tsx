@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CalendarClock } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getSessionUserId } from "../../../actions";
+import { BackToDashboardLink } from "../../back-to-dashboard-link";
 
 const dateFormatter = new Intl.DateTimeFormat("es-AR", {
   dateStyle: "medium",
@@ -61,12 +62,12 @@ export default async function HouseholdDuePage() {
     <main className="dashboard-shell">
       <header className="dashboard-header">
         <div>
+          <BackToDashboardLink />
           <p className="dashboard-kicker">{user.church.name} · Santa Cena</p>
           <h1>Santa Cenas</h1>
           <p className="dashboard-intro">Hogares con periodicidad y próxima visita definida.</p>
         </div>
         <div className="dashboard-actions">
-          <Link className="activity-cancel" href="/dashboard">Volver al dashboard</Link>
           <Link className="activity-cancel" href="/dashboard/households">Administrar hogares</Link>
         </div>
       </header>

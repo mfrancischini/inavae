@@ -1,9 +1,11 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { Upload } from "lucide-react";
 
 import { getSessionUserId } from "../../actions";
 import { prisma } from "@/lib/prisma";
 import { createHousehold } from "../household-actions";
+import { BackToDashboardLink } from "../back-to-dashboard-link";
 
 const pageSize = 10;
 
@@ -18,9 +20,10 @@ export default async function HouseholdsPage({ searchParams }: { searchParams: P
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { churchId: true, church: { select: { name: true } } },
+    select: { churchId: true, church: { select: { name: true } }, roles: { select: { role: { select: { name: true } } } } },
   });
   if (!user) redirect("/");
+  const isAdmin = user.roles.some(({ role }) => role.name === "ADMIN");
 
   const where = {
     churchId: user.churchId,
@@ -45,8 +48,25 @@ export default async function HouseholdsPage({ searchParams }: { searchParams: P
     <main className="dashboard-shell">
       <div className="households-layout">
         <section className="activity-editor">
-          <p className="dashboard-kicker">{user.church.name} · Santa Cena</p>
-          <h1>Hogares</h1>
+          <BackToDashboardLink />
+          <div className="household-page-heading">
+            <div>
+              <p className="dashboard-kicker">{user.church.name} · Santa Cena</p>
+              <h1>Hogares</h1>
+            </div>
+            {isAdmin && (
+              <div className="dashboard-actions">
+                <Link
+                  className="dashboard-action dashboard-action-house"
+                  href="/dashboard/households/import"
+                  aria-label="Importar hogares e integrantes desde Excel"
+                  title="Importar hogares e integrantes desde Excel"
+                >
+                  <Upload size={17} strokeWidth={2} aria-hidden="true" />
+                </Link>
+              </div>
+            )}
+          </div>
           <p className="dashboard-intro">Registrá los hogares y la periodicidad con la que deben volver a visitarse.</p>
 
           <form className="activity-form household-form" action={createHousehold}>

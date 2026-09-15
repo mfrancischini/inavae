@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 
 import { FileSpreadsheet } from "lucide-react";
 import { getSessionUserId } from "../../actions";
 import { prisma } from "@/lib/prisma";
+import { BackToDashboardLink } from "../back-to-dashboard-link";
 
 function getMonthBounds() {
   const now = new Date();
@@ -32,11 +32,11 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
       <section className="report-editor">
         <header className="dashboard-header report-header">
           <div>
+            <BackToDashboardLink />
             <p className="dashboard-kicker">{user.church.name} · Reportes</p>
             <h1>Actividades</h1>
             <p className="dashboard-intro">Elegí un período para descargar todas las actividades en Excel.</p>
           </div>
-          <Link className="activity-cancel" href="/dashboard">Volver al dashboard</Link>
         </header>
 
         <div className="report-how-it-works" aria-label="Cómo usar el reporte">
