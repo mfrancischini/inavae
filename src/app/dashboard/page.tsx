@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { CalendarClock, FileSpreadsheet, House } from "lucide-react";
+import { Ban, CalendarClock, FileSpreadsheet, House } from "lucide-react";
 
 import { getSessionUserId, signOut } from "../actions";
 import { cancelActivity, completeActivity } from "./activity-actions";
@@ -214,6 +214,15 @@ export default async function DashboardPage() {
               title="Exportar actividades a Excel"
             >
               <FileSpreadsheet size={17} strokeWidth={2} aria-hidden="true" />
+            </Link>
+
+            <Link
+              className="dashboard-action dashboard-action-house"
+              href="/dashboard/activities/cancelled"
+              aria-label="Ver actividades canceladas"
+              title="Actividades canceladas"
+            >
+              <Ban size={17} strokeWidth={2} aria-hidden="true" />
             </Link>
 
             <Link

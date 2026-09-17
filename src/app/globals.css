@@ -1049,24 +1049,45 @@ input {
   font-weight: 800;
 }
 
-.household-pagination {
+.household-alphabet {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  gap: 18px;
-  padding-top: 24px;
-  color: var(--muted);
+  gap: 4px;
+  margin-bottom: 16px;
   font-size: 0.74rem;
 }
 
-.household-pagination a {
+.household-alphabet a,
+.household-alphabet-disabled {
+  min-width: 22px;
+  padding: 2px 5px;
+  border-radius: 3px;
+  text-align: center;
+}
+
+.household-alphabet a {
   color: var(--blue-deep);
   font-weight: 800;
   text-decoration: none;
 }
 
-.household-pagination a:hover {
-  text-decoration: underline;
+.household-alphabet a:hover {
+  background: rgba(79, 145, 194, 0.12);
+}
+
+.household-alphabet-active {
+  background: var(--blue-deep);
+  color: #fff !important;
+}
+
+.household-alphabet-active:hover {
+  background: var(--blue-deep) !important;
+}
+
+.household-alphabet-disabled {
+  color: var(--muted);
+  opacity: 0.4;
 }
 
 .report-editor {
@@ -1493,6 +1514,20 @@ input {
 .dashboard-empty {
   padding: 32px 0;
   color: var(--muted);
+}
+
+.under-construction {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 64px 24px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.under-construction h2 {
+  color: var(--ink);
 }
 
 .household-template-download {

@@ -7,16 +7,26 @@ import { prisma } from "@/lib/prisma";
 import { createHousehold } from "../household-actions";
 import { BackToDashboardLink } from "../back-to-dashboard-link";
 
-const pageSize = 10;
+const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
-export default async function HouseholdsPage({ searchParams }: { searchParams: Promise<{ q?: string; page?: string }> }) {
+function firstLetter(name: string) {
+  const normalized = name
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .trim()
+    .toUpperCase();
+  const char = normalized.charAt(0);
+  return ALPHABET.includes(char) ? char : "#";
+}
+
+export default async function HouseholdsPage({ searchParams }: { searchParams: Promise<{ q?: string; letter?: string }> }) {
   const userId = await getSessionUserId();
   if (!userId) redirect("/");
 
   const params = await searchParams;
   const query = params.q?.trim() ?? "";
-  const requestedPage = Number(params.page ?? "1");
-  const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+  const requestedLetter = params.letter?.trim().toUpperCase() ?? "";
+  const selectedLetter = requestedLetter && (ALPHABET.includes(requestedLetter) || requestedLetter === "#") ? requestedLetter : "";
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -30,19 +40,18 @@ export default async function HouseholdsPage({ searchParams }: { searchParams: P
     status: "ACTIVE" as const,
     ...(query ? { OR: [{ name: { contains: query, mode: "insensitive" as const } }, { address: { contains: query, mode: "insensitive" as const } }] } : {}),
   };
-  const total = await prisma.scHousehold.count({ where });
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  const currentPage = Math.min(page, totalPages);
-  const households = await prisma.scHousehold.findMany({
+  const allMatches = await prisma.scHousehold.findMany({
     where,
     orderBy: [{ name: "asc" }, { id: "asc" }],
-    skip: (currentPage - 1) * pageSize,
-    take: pageSize,
     select: {
       id: true,
       name: true,
     },
   });
+
+  const availableLetters = new Set(allMatches.map((household) => firstLetter(household.name)));
+  const total = allMatches.length;
+  const households = selectedLetter ? allMatches.filter((household) => firstLetter(household.name) === selectedLetter) : allMatches;
 
   return (
     <main className="dashboard-shell">
@@ -93,7 +102,37 @@ export default async function HouseholdsPage({ searchParams }: { searchParams: P
             <input name="q" type="search" defaultValue={query} placeholder="Buscar por hogar o dirección" aria-label="Buscar hogares" />
             <button type="submit">Buscar</button>
           </form>
-          {total === 0 ? <p className="dashboard-empty">{query ? "No encontramos hogares con esa búsqueda." : "Todavía no hay hogares registrados."}</p> : households.map((household) => {
+          {total > 0 && (
+            <nav className="household-alphabet" aria-label="Paginación de hogares por letra">
+              <Link
+                className={selectedLetter ? "" : "household-alphabet-active"}
+                href={`/dashboard/households?q=${encodeURIComponent(query)}`}
+              >
+                Todos
+              </Link>
+              {[...ALPHABET, "#"].map((letter) => {
+                const isAvailable = availableLetters.has(letter);
+                const isActive = selectedLetter === letter;
+                if (!isAvailable) {
+                  return <span key={letter} className="household-alphabet-disabled">{letter}</span>;
+                }
+                return (
+                  <Link
+                    key={letter}
+                    className={isActive ? "household-alphabet-active" : ""}
+                    href={`/dashboard/households?q=${encodeURIComponent(query)}&letter=${letter}`}
+                  >
+                    {letter}
+                  </Link>
+                );
+              })}
+            </nav>
+          )}
+          {total === 0 ? (
+            <p className="dashboard-empty">{query ? "No encontramos hogares con esa búsqueda." : "Todavía no hay hogares registrados."}</p>
+          ) : households.length === 0 ? (
+            <p className="dashboard-empty">No hay hogares que empiecen con &ldquo;{selectedLetter}&rdquo;.</p>
+          ) : households.map((household) => {
             return <article className="household-card" key={household.id}>
               <div>
                 <h3><Link className="household-name-link" href={`/dashboard/households/${household.id}`}>{household.name}</Link></h3>
@@ -104,13 +143,6 @@ export default async function HouseholdsPage({ searchParams }: { searchParams: P
               </div>
             </article>
           })}
-          {totalPages > 1 && (
-            <nav className="household-pagination" aria-label="Paginación de hogares">
-              {currentPage > 1 && <Link href={`/dashboard/households?q=${encodeURIComponent(query)}&page=${currentPage - 1}`}>Anterior</Link>}
-              <span>Página {currentPage} de {totalPages}</span>
-              {currentPage < totalPages && <Link href={`/dashboard/households?q=${encodeURIComponent(query)}&page=${currentPage + 1}`}>Siguiente</Link>}
-            </nav>
-          )}
         </section>
       </div>
     </main>
