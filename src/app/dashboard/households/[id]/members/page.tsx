@@ -9,7 +9,7 @@ import { BackToDashboardLink } from "../../../back-to-dashboard-link";
 
 const birthDateFormatter = new Intl.DateTimeFormat("es-AR", {
   dateStyle: "medium",
-  timeZone: "America/Argentina/Buenos_Aires",
+  timeZone: "UTC",
 });
 
 export default async function HouseholdMembersPage({ params }: { params: Promise<{ id: string }> }) {

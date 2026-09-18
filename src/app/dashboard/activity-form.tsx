@@ -60,7 +60,7 @@ export function ActivityForm({ activityTypes, people, users, households, activit
           <input name="scheduledAt" type="datetime-local" defaultValue={activity?.scheduledAt ?? ""} required />
         </label>
         <label>
-          Acompañantes
+          Siervos
           <select className="activity-multi-select" name="companionUserIds" multiple defaultValue={activity?.companionUserIds ?? []}>
             {users.map((user) => (
               <option key={user.id} value={user.id}>{user.name}</option>

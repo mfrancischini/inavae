@@ -9,7 +9,7 @@ import { BackToDashboardLink } from "../../../../../back-to-dashboard-link";
 function formatDateInput(date: Date | null) {
   if (!date) return "";
   return new Intl.DateTimeFormat("sv-SE", {
-    timeZone: "America/Argentina/Buenos_Aires",
+    timeZone: "UTC",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",

@@ -218,7 +218,7 @@ export async function confirmHouseholdImport(
         metadata: { createdHouseholds, createdMembers },
       },
     });
-  });
+  }, { timeout: 60_000 });
 
   redirect("/dashboard/households");
 }
