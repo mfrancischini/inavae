@@ -63,7 +63,8 @@ export async function authenticate(_previousState: LoginState, formData: FormDat
       data: { lastLoginAt: new Date() },
     });
 
-  } catch {
+  } catch (error) {
+    console.error("Fallo al autenticar:", error);
     return { error: "No se pudo conectar con la base de datos. Revisá la conexión de Supabase." };
   }
 
